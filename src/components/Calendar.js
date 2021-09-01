@@ -1,123 +1,171 @@
-import styled from "styled-components";
-const Calendar = () => {
-  return (
-    <CalendarContainer>
-      {/* HEADER */}
+import { useState, useEffect } from "react"
+import styled from "styled-components"
 
-      <div className="header">
-        <div className="header-button">◀️</div>
-        <span className="month">March</span>
-        <div className="header-button">▶️</div>
-      </div>
+const Calendar2 = ({ hideCalendarFunc, today, setToday, handleDayClick }) => {
+	const [calendar, setCalendar] = useState([])
+	const startDay = today.clone().startOf("month").startOf("week").add(1, "day")
+	const endDay = today.clone().endOf("month").endOf("week")
+	const day = startDay.clone().subtract(1, "day")
 
-      {/* WEEKDAYS */}
+	useEffect(() => {
+		const a = []
+		while (day.isBefore(endDay, "day")) {
+			a.push(
+				Array(7)
+					.fill(0)
+					.map(() => day.add(1, "day").clone())
+			)
+		}
+		setCalendar(a)
+	}, [today])
 
-      <div className="weekdays">
-        <div className="weekday">Mon</div>
-        <div className="weekday">Tue</div>
-        <div className="weekday">Wed</div>
-        <div className="weekday">Thu</div>
-        <div className="weekday">Fri</div>
-        <div className="weekday">Sat</div>
-        <div className="weekday">Sun</div>
-      </div>
+	const isSelected = day => {
+		return today.isSame(day, "day")
+	}
+	const beforeToday = day => {
+		return day.isBefore(new Date(), "day")
+	}
+	const isToday = day => {
+		return day.isSame(new Date(), "day")
+	}
 
-      {/* DAYS */}
+	const nextMonth = () => {
+		setToday(today.clone().add(1, "month"))
+	}
 
-      <div className="days">
-        <div className="day">1</div>
-        <div className="day">2</div>
-        <div className="day">3</div>
-        <div className="day">4</div>
-        <div className="day">5</div>
-        <div className="day">6</div>
-        <div className="day">7</div>
-        <div className="day">8</div>
-        <div className="day">9</div>
-        <div className="day">10</div>
-        <div className="day">11</div>
-        <div className="day">12</div>
-        <div className="day">13</div>
-        <div className="day">14</div>
-        <div className="day">15</div>
-        <div className="day">16</div>
-        <div className="day">17</div>
-        <div className="day">18</div>
-        <div className="day">19</div>
-        <div className="day today">20</div>
-        <div className="day">21</div>
-        <div className="day">22</div>
-        <div className="day">23</div>
-        <div className="day">24</div>
-        <div className="day">25</div>
-        <div className="day">26</div>
-        <div className="day">27</div>
-        <div className="day">28</div>
-        <div className="day">29</div>
-        <div className="day">30</div>
-        <div className="day">31</div>
-      </div>
-    </CalendarContainer>
-  );
-};
+	const prevMonth = () => {
+		setToday(today.clone().subtract(1, "month"))
+	}
+
+	const dayStyles = day => {
+		if (beforeToday(day)) return "day before"
+		if (isToday(day)) return "day today"
+		if (isSelected(day)) return "day selected"
+		return "day"
+	}
+
+	// Render Calendar
+
+	return (
+		<CalendarContainer>
+			<Close onClick={hideCalendarFunc}>&bull;&bull;&bull;</Close>
+			<div className="header">
+				<button onClick={() => prevMonth()} className="header-button">
+					←
+				</button>
+				<span className="month">
+					{today.format("MMMM")} {today.format("YYYY")}
+				</span>
+				<button onClick={() => nextMonth()} className="header-button">
+					→
+				</button>
+			</div>
+			<div className="weekdays">
+				<div className="weekday">Mon</div>
+				<div className="weekday">Tue</div>
+				<div className="weekday">Wed</div>
+				<div className="weekday">Thu</div>
+				<div className="weekday">Fri</div>
+				<div className="weekday">Sat</div>
+				<div className="weekday">Sun</div>
+			</div>
+			{calendar.map((week, i) => (
+				<Week key={i}>
+					{week.map((day, i) => (
+						<div className={dayStyles(day)} key={i} onClick={() => handleDayClick(day)}>
+							{day.format("D")}
+						</div>
+					))}
+				</Week>
+			))}
+		</CalendarContainer>
+	)
+}
 
 const CalendarContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  width: 400px;
-  padding: 0 1rem;
-  background-color: #f5f5f5;
-  border-radius: 5px;
-  box-shadow: 0px 0px 5px 0px rgba(0, 0, 0, 0.2);
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	max-width: 400px;
+	padding: 0 1rem;
+	background-color: #f5f5f5;
+	border-radius: 5px;
+	box-shadow: 0px 0px 5px 0px rgba(0, 0, 0, 0.2);
 
-  .header {
-    width: 100%;
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    background-color: #c5c5c5;
-    padding: 1rem;
-    font-weight: bold;
-    border-radius: 5px 5px 0 0;
-  }
+	.header {
+		width: 100%;
+		display: flex;
+		flex-direction: row;
+		justify-content: space-between;
+		background-color: #c5c5c5;
+		padding: 1rem;
+		font-weight: bold;
+	}
 
-  .weekdays {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-around;
-    width: 100%;
-    padding: 0.5rem;
-    border-bottom: 1px solid #c5c5c5;
-    text-align: center;
-  }
+	.weekdays {
+		display: flex;
+		flex-direction: row;
+		justify-content: space-around;
+		width: 100%;
+		padding: 0.5rem;
+		border-bottom: 1px solid #c5c5c5;
+		text-align: center;
+	}
+`
 
-  .days {
-    width: 100%;
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    text-align: center;
-    user-select: none;
+const Week = styled.div`
+	display: flex;
+	flex-direction: row;
+	justify-content: space-between;
+	width: 100%;
+	height: 100%;
 
-    .today {
-      font-weight: bold;
-      border: 1px solid #a5a5a5;
-      background: #c5c5c5;
-    }
-  }
+	.day {
+		padding: 0.5rem;
+		border: 1px solid transparent;
 
-  .day {
-    padding: 0.5rem;
-    border: 1px solid transparent;
-    :hover {
-      border: 1px solid #a5a5a5;
-      cursor: pointer;
-    }
-    :active {
-      background: #c5c5c5;
-    }
-  }
-`;
+		:hover {
+			border: 1px solid #a5a5a5;
+			cursor: pointer;
+		}
 
-export default Calendar;
+		:active {
+			background: #c5c5c5;
+		}
+	}
+
+	.today {
+		border: 1px solid #c5c5c5;
+		background-color: #a5a5a5;
+	}
+
+	.selected {
+		background: #3db2ff;
+	}
+
+	.before {
+		color: #ccc;
+	}
+
+	.selected {
+		background-color: #4abdff;
+		color: white;
+	}
+
+	.today {
+		background-color: #ccc;
+	}
+`
+
+const Close = styled.button`
+	position: absolute;
+	top: -1rem;
+	right: 0;
+	background: #c5c5c5;
+	border: none;
+	color: red;
+	cursor: pointer;
+`
+export default Calendar2
